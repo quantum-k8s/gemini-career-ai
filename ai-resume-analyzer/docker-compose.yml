@@ -16,6 +16,11 @@ services:
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - resume_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
@@ -25,6 +30,11 @@ services:
       - "6379:6379"
     networks:
       - resume_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4
@@ -70,8 +80,10 @@ services:
       - JWT_SECRET=${JWT_SECRET:-jwtsecretforauthservice9988}
       - REDIS_URL=redis://redis:6379/0
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - resume_network
 
@@ -85,7 +97,8 @@ services:
     volumes:
       - resume_uploads:/app/uploads
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - resume_network
 
@@ -105,7 +118,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgrespassword@postgres:5432/resumedb
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - resume_network
 
@@ -116,7 +130,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgrespassword@postgres:5432/resumedb
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - resume_network
 
@@ -127,7 +142,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgrespassword@postgres:5432/resumedb
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - resume_network
 

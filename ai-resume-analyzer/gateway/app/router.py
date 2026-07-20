@@ -42,24 +42,41 @@ async def proxy_request(service_url: str, path: str, request: Request) -> Respon
 
 @gateway_router.api_route("/api/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 async def proxy_auth(path: str, request: Request):
-    return await proxy_request(AUTH_SERVICE_URL, f"auth/{path}", request)
+    return await proxy_request(AUTH_SERVICE_URL, f"api/auth/{path}", request)
 
-@gateway_router.api_route("/api/resume/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-async def proxy_resume(path: str, request: Request):
-    return await proxy_request(RESUME_SERVICE_URL, f"resumes/{path}" if path.startswith("resumes") else path, request)
-
-@gateway_router.api_route("/api/ai/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-async def proxy_ai(path: str, request: Request):
-    return await proxy_request(AI_SERVICE_URL, f"ai/{path}" if path.startswith("ats-score") or path.startswith("refactor") else path, request)
-
-@gateway_router.api_route("/api/jobs/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-async def proxy_jobs(path: str, request: Request):
-    return await proxy_request(JOB_SERVICE_URL, f"jobs/{path}" if path.startswith("jobs") else path, request)
+@gateway_router.api_route("/api/admin/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy_admin(path: str, request: Request):
+    return await proxy_request(AUTH_SERVICE_URL, f"api/auth/admin/{path}", request)
 
 @gateway_router.api_route("/api/user/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 async def proxy_user(path: str, request: Request):
-    return await proxy_request(USER_SERVICE_URL, f"user/{path}" if path.startswith("profile") else path, request)
+    return await proxy_request(USER_SERVICE_URL, f"api/user/{path}", request)
+
+@gateway_router.api_route("/api/resumes/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy_resumes(path: str, request: Request):
+    return await proxy_request(RESUME_SERVICE_URL, f"api/resumes/{path}", request)
+
+@gateway_router.api_route("/api/resumes", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy_resumes_root(request: Request):
+    return await proxy_request(RESUME_SERVICE_URL, "api/resumes", request)
+
+@gateway_router.api_route("/api/job-descriptions/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy_jds(path: str, request: Request):
+    return await proxy_request(RESUME_SERVICE_URL, f"api/job-descriptions/{path}", request)
+
+@gateway_router.api_route("/api/job-descriptions", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy_jds_root(request: Request):
+    return await proxy_request(RESUME_SERVICE_URL, "api/job-descriptions", request)
+
+@gateway_router.api_route("/api/jobs/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy_jobs(path: str, request: Request):
+    return await proxy_request(JOB_SERVICE_URL, f"api/jobs/{path}", request)
+
+@gateway_router.api_route("/api/ai/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy_ai(path: str, request: Request):
+    return await proxy_request(AI_SERVICE_URL, f"ai/{path}", request)
 
 @gateway_router.api_route("/api/notifications/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 async def proxy_notifications(path: str, request: Request):
-    return await proxy_request(NOTIFICATION_SERVICE_URL, f"notifications/{path}" if path.startswith("notifications") else path, request)
+    return await proxy_request(NOTIFICATION_SERVICE_URL, f"api/notifications/{path}", request)
+
