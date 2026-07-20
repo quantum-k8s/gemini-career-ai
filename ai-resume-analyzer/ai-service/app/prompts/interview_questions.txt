@@ -1,0 +1,1 @@
+Based on the resume and job description, generate 5 technical interview questions and 5 behavioral interview questions. Return ONLY valid JSON: {"questions": [{"type": "technical|behavioral", "question": string, "topic": string}]}

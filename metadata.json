@@ -1,0 +1,6 @@
+{
+  "name": "AI Resume Analyzer",
+  "description": "Analyze, score, and refactor resumes against job descriptions with detailed ATS insights.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

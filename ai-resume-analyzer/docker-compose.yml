@@ -1,0 +1,153 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: resume_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword}
+      POSTGRES_DB: ${POSTGRES_DB:-resumedb}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - resume_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: resume_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - resume_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: resume_pgadmin
+    restart: always
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+    networks:
+      - resume_network
+
+  gateway:
+    build: ./gateway
+    container_name: resume_gateway
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:8001
+      - RESUME_SERVICE_URL=http://resume-service:8002
+      - AI_SERVICE_URL=http://ai-service:8003
+      - JOB_SERVICE_URL=http://job-service:8004
+      - USER_SERVICE_URL=http://user-service:8005
+      - NOTIFICATION_SERVICE_URL=http://notification-service:8006
+    depends_on:
+      - auth-service
+      - resume-service
+      - ai-service
+      - job-service
+      - user-service
+      - notification-service
+    networks:
+      - resume_network
+
+  auth-service:
+    build: ./auth-service
+    container_name: resume_auth_service
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgrespassword@postgres:5432/resumedb
+      - JWT_SECRET=${JWT_SECRET:-jwtsecretforauthservice9988}
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - resume_network
+
+  resume-service:
+    build: ./resume-service
+    container_name: resume_parsing_service
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgrespassword@postgres:5432/resumedb
+      - UPLOAD_DIR=/app/uploads
+    volumes:
+      - resume_uploads:/app/uploads
+    depends_on:
+      - postgres
+    networks:
+      - resume_network
+
+  ai-service:
+    build: ./ai-service
+    container_name: resume_ai_service
+    restart: always
+    environment:
+      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY}
+    networks:
+      - resume_network
+
+  job-service:
+    build: ./job-service
+    container_name: resume_job_service
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgrespassword@postgres:5432/resumedb
+    depends_on:
+      - postgres
+    networks:
+      - resume_network
+
+  user-service:
+    build: ./user-service
+    container_name: resume_user_service
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgrespassword@postgres:5432/resumedb
+    depends_on:
+      - postgres
+    networks:
+      - resume_network
+
+  notification-service:
+    build: ./notification-service
+    container_name: resume_notification_service
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgrespassword@postgres:5432/resumedb
+    depends_on:
+      - postgres
+    networks:
+      - resume_network
+
+  frontend:
+    build: ./frontend
+    container_name: resume_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - gateway
+    networks:
+      - resume_network
+
+volumes:
+  postgres_data:
+  resume_uploads:
+
+networks:
+  resume_network:
+    driver: bridge

@@ -1,0 +1,1 @@
+Analyze the resume vs the job description. Identify skill gaps and recommend resources. Return ONLY valid JSON: {"gaps": [{"skill": string, "priority": "high|medium|low"}], "recommended_resources": [{"resource": string, "type": "course|book|article|project"}]}
